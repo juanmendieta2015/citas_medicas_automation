@@ -24,6 +24,7 @@ try:
     MEDICINA_GENERAL = 'MEDICINA GENERAL'
     MEDICINA_FAMILIAR = 'MEDICINA FAMILIAR'
     MENSAJE_NO_DISPONIBILIDAD = "El establecimiento en el que se encuentra adscrito no tiene disponibilidad para el servicio seleccionado. Desea mostrar más establecimientos?"
+    INTERVALO_MINUTOS_CONSULTAR = 5
     
     # Login
     driver.find_element(By.ID, "TxtUsuario").send_keys(USUARIO)
@@ -57,7 +58,7 @@ try:
         time.sleep(1)
         cita_medica_a.click()    
         # driver.implicitly_wait(5)  
-        time.sleep(5)
+        time.sleep(2)
             
         # Buscar el elemento <p> que contiene "El establecimiento en el que se encuentra adscrito no tiene disponibilidad..."
         mensaje_no_disponibilidad_alert = driver.find_elements(By.XPATH, f"//p[text()='{MENSAJE_NO_DISPONIBILIDAD}']")
@@ -106,7 +107,8 @@ try:
             print('Fin del programa')
             break
         
-        time.sleep(300)
+        print(f"Esperando {INTERVALO_MINUTOS_CONSULTAR} minutos para volver a intentar...")
+        time.sleep(INTERVALO_MINUTOS_CONSULTAR*60)
 
 finally:
     driver.quit()
