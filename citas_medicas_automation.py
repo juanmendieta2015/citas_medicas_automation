@@ -58,7 +58,7 @@ try:
         time.sleep(1)
         cita_medica_a.click()    
         # driver.implicitly_wait(5)  
-        time.sleep(2)
+        time.sleep(5)
             
         # Buscar el elemento <p> que contiene "El establecimiento en el que se encuentra adscrito no tiene disponibilidad..."
         mensaje_no_disponibilidad_alert = driver.find_elements(By.XPATH, f"//p[text()='{MENSAJE_NO_DISPONIBILIDAD}']")
