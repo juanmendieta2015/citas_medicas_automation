@@ -2,6 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from dotenv import load_dotenv
+from datetime import datetime
 import time
 import winsound
 import os
@@ -63,7 +64,8 @@ try:
 
         # Verificar si existe
         if len(mensaje_no_disponibilidad_alert) > 0:
-            print("NO HAY DISPONIBILIDAD EN EL SUBCENTRO ADSCRITO PARA MEDICINA GENERAL")
+            fecha_hora_actual = datetime.now()
+            print(f"{fecha_hora_actual}: NO HAY DISPONIBILIDAD EN EL SUBCENTRO ADSCRITO PARA MEDICINA GENERAL")
             cancel_button = driver.find_element(By.CLASS_NAME, "cancel")
             cancel_button.click()
             
@@ -89,7 +91,7 @@ try:
             # Buscar el elemento <p> que contiene "El establecimiento en el que se encuentra adscrito no tiene disponibilidad ..."
             mensaje_no_disponibilidad_alert = driver.find_elements(By.XPATH, f"//p[text()='{MENSAJE_NO_DISPONIBILIDAD}']") 
             if len(mensaje_no_disponibilidad_alert) > 0:
-                print("NO HAY DISPONIBILIDAD EN EL SUBCENTRO ADSCRITO PARA MEDICINA FAMILIAR")
+                print(f"{fecha_hora_actual}: NO HAY DISPONIBILIDAD EN EL SUBCENTRO ADSCRITO PARA MEDICINA FAMILIAR")
                 cancel_button = driver.find_element(By.CLASS_NAME, "cancel")
                 cancel_button.click()            
             else:
