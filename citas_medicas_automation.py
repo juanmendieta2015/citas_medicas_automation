@@ -1,8 +1,10 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
+from dotenv import load_dotenv
 import time
 import winsound
+import os
 
 # Configura el navegador
 options = webdriver.ChromeOptions()
@@ -14,9 +16,10 @@ try:
     driver.get('https://www.citas.med.ec/')
     driver.implicitly_wait(10) 
     
-    USUARIO = '0700578008'
-    CONTRASENA = 'Sara2019!'
-    NOMBRE_COMPLETO_PACIENTE = 'SONIA MAGALY MENDIETA VIVAR'
+    load_dotenv()
+    USUARIO = os.getenv('USUARIO')
+    CONTRASENA = os.getenv('CONTRASENA')
+    NOMBRE_COMPLETO_PACIENTE = os.getenv('NOMBRE_COMPLETO_PACIENTE')
     MEDICINA_GENERAL = 'MEDICINA GENERAL'
     MEDICINA_FAMILIAR = 'MEDICINA FAMILIAR'
     MENSAJE_NO_DISPONIBILIDAD = "El establecimiento en el que se encuentra adscrito no tiene disponibilidad para el servicio seleccionado. Desea mostrar más establecimientos?"
