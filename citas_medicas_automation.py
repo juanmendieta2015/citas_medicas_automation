@@ -8,7 +8,6 @@ from selenium.webdriver.support import expected_conditions as EC
 import time
 import winsound
 import os
-import sys
 
 options = webdriver.ChromeOptions()
 driver = webdriver.Chrome(options=options)
@@ -16,6 +15,9 @@ driver.maximize_window()
 
 def esperar_elemento(id_elemento, timeout=10):
     WebDriverWait(driver, timeout).until(EC.presence_of_element_located((By.ID, id_elemento)))
+    
+def esperar_elemento_by_XPATH(xpath_elemento, timeout=10):
+    WebDriverWait(driver, timeout).until(EC.presence_of_element_located((By.XPATH, xpath_elemento)))    
 
 def login():
     driver.find_element(By.ID, "TxtUsuario").send_keys(USUARIO)
@@ -31,6 +33,16 @@ def click_element_by_ID(id, is_scroll_necesary):
         element.click()  
     except Exception as e:
         print(f"Error al hacer clic en el elemento con ID {id}: {str(e)}")
+        
+def click_element_by_XPATH(xpath, is_scroll_necesary) :
+    try:
+        element = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, xpath))) 
+        if is_scroll_necesary:
+            driver.execute_script("arguments[0].scrollIntoView(true);", element)
+        element.click()  
+    except Exception as e:
+        print(f"Error al hacer clic en el elemento con XPATH {xpath}: {str(e)}")
+    
 
 def verificar_disponibilidad(mensaje):
     return len(driver.find_elements(By.XPATH, f"//p[text()='{mensaje}']")) > 0
@@ -43,8 +55,10 @@ try:
     MEDICINA_FAMILIAR = 'MEDICINA FAMILIAR'
     CITAS_MEDICAS_URL = 'https://www.citas.med.ec/'
     MENSAJE_NO_DISPONIBILIDAD = "El establecimiento en el que se encuentra adscrito no tiene disponibilidad para el servicio seleccionado. Desea mostrar más establecimientos?"
-    INTERVALO_MINUTOS_CONSULTAR = 1
+    INTERVALO_MINUTOS_CONSULTAR = 0.25
     ICONO_AGENDAR_CITA = "ContentPlaceHolderPrincipalAgendamientoWeb_imgBtnAgendar"
+    MEDICINA_GENERAL = "//span[contains(text(), 'MEDICINA GENERAL')]"
+    MEDICINA_FAMILIAR = "//span[contains(text(), 'MEDICINA FAMILIAR')]"
     
     if not USUARIO or not CONTRASENA:
         raise ValueError("Faltan variables de entorno USUARIO o CONTRASENA")
@@ -58,12 +72,11 @@ try:
         EC.presence_of_element_located((By.XPATH, f"//span[contains(text(), '{NOMBRE_COMPLETO_PACIENTE}')]"))
     )
     nombre_paciente.click()
-    time.sleep(3)
+    time.sleep(5)
     
     while True:
-        medicina_general_icon = "ctl00_ContentPlaceHolderPrincipalAgendamientoWeb_WucAgendaCita_RadLstEspecialidades_ctrl1_ImgServicio"
-        esperar_elemento(medicina_general_icon)
-        click_element_by_ID(medicina_general_icon, False)
+        esperar_elemento_by_XPATH(MEDICINA_GENERAL)
+        click_element_by_XPATH(MEDICINA_GENERAL, False)
         time.sleep(3)
         
         seleccionar_cita_medica_medicina_general_link = "ctl00_ContentPlaceHolderPrincipalAgendamientoWeb_WucAgendaCita_RadLstMotivos_ctrl1_LnkBtnMotivo"
@@ -75,11 +88,10 @@ try:
             print(f"{fecha_hora_actual}: NO hay disponibilidad en el subcentro adscrito para Medicina General")
             cancel_button = driver.find_element(By.CLASS_NAME, "cancel")
             cancel_button.click()
-        
-            medicina_familiar_icon = "ctl00_ContentPlaceHolderPrincipalAgendamientoWeb_WucAgendaCita_RadLstEspecialidades_ctrl4_ImgServicio"
-            esperar_elemento(medicina_familiar_icon)
-            click_element_by_ID(medicina_familiar_icon, True)
-            time.sleep(3)
+
+            esperar_elemento_by_XPATH(MEDICINA_FAMILIAR)
+            click_element_by_XPATH(MEDICINA_FAMILIAR, False)
+            time.sleep(3)            
             
             cita_medica_medicina_familiar = "ctl00_ContentPlaceHolderPrincipalAgendamientoWeb_WucAgendaCita_RadLstMotivos_ctrl0_LnkBtnMotivo"
             esperar_elemento(cita_medica_medicina_familiar)
@@ -88,7 +100,7 @@ try:
             if verificar_disponibilidad(MENSAJE_NO_DISPONIBILIDAD) > 0:
                 print(f"{fecha_hora_actual}: NO hay disponibilidad en el subcentro adscrito para Medicina Familiar")
                 cancel_button = driver.find_element(By.CLASS_NAME, "cancel")
-                cancel_button.click()            
+                cancel_button.click()     
             else:
                 print("SÍ hay disponibilidad en el subcentro adscrito para Medicina Familiar")
                 winsound.PlaySound('fun_song.wav',winsound.SND_FILENAME)
