@@ -55,7 +55,7 @@ try:
     MEDICINA_FAMILIAR = 'MEDICINA FAMILIAR'
     CITAS_MEDICAS_URL = 'https://www.citas.med.ec/'
     MENSAJE_NO_DISPONIBILIDAD = "El establecimiento en el que se encuentra adscrito no tiene disponibilidad para el servicio seleccionado. Desea mostrar más establecimientos?"
-    INTERVALO_MINUTOS_CONSULTAR = 0.25
+    INTERVALO_MINUTOS_CONSULTAR = 10
     ICONO_AGENDAR_CITA = "ContentPlaceHolderPrincipalAgendamientoWeb_imgBtnAgendar"
     MEDICINA_GENERAL = "//span[contains(text(), 'MEDICINA GENERAL')]"
     MEDICINA_FAMILIAR = "//span[contains(text(), 'MEDICINA FAMILIAR')]"
@@ -72,8 +72,7 @@ try:
         EC.presence_of_element_located((By.XPATH, f"//span[contains(text(), '{NOMBRE_COMPLETO_PACIENTE}')]"))
     )
     nombre_paciente.click()
-    time.sleep(5)
-    
+     
     while True:
         esperar_elemento_by_XPATH(MEDICINA_GENERAL)
         click_element_by_XPATH(MEDICINA_GENERAL, False)
