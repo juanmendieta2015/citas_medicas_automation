@@ -72,6 +72,7 @@ try:
         EC.presence_of_element_located((By.XPATH, f"//span[contains(text(), '{NOMBRE_COMPLETO_PACIENTE}')]"))
     )
     nombre_paciente.click()
+    time.sleep(5)
      
     while True:
         esperar_elemento_by_XPATH(MEDICINA_GENERAL)
