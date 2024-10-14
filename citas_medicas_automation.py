@@ -42,23 +42,29 @@ def click_element_by_XPATH(xpath, is_scroll_necesary) :
         element.click()  
     except Exception as e:
         print(f"Error al hacer clic en el elemento con XPATH {xpath}: {str(e)}")
-    
 
 def verificar_disponibilidad(mensaje):
     return len(driver.find_elements(By.XPATH, f"//p[text()='{mensaje}']")) > 0
+
+def build_xpath_seleccionar_motivo_link(motivo_cita_medica):
+    return f"//fieldset[@id='FieldSet2']//div[contains(., '{motivo_cita_medica}')]//a[contains(text(), 'Seleccionar')]"
+
+def build_xpath_servicio_medico_link(servicio_medico):
+    return f"//span[contains(text(), '{servicio_medico}')]"
     
 try:
     load_dotenv()
     USUARIO = os.getenv('USUARIO')
     CONTRASENA = os.getenv('CONTRASENA')
     NOMBRE_COMPLETO_PACIENTE = os.getenv('NOMBRE_COMPLETO_PACIENTE')
+    SERVICIO_MEDICO = ["MEDICINA GENERAL", "MEDICINA FAMILIAR"]
+    MEDICINA_GENERAL = 'MEDICINA GENERAL'
     MEDICINA_FAMILIAR = 'MEDICINA FAMILIAR'
+    MOTIVO_CITA_MEDICA = "CITA MEDICA"
     CITAS_MEDICAS_URL = 'https://www.citas.med.ec/'
     MENSAJE_NO_DISPONIBILIDAD = "El establecimiento en el que se encuentra adscrito no tiene disponibilidad para el servicio seleccionado. Desea mostrar más establecimientos?"
-    INTERVALO_MINUTOS_CONSULTAR = 10
+    INTERVALO_MINUTOS_CONSULTAR = 0.1
     ICONO_AGENDAR_CITA = "ContentPlaceHolderPrincipalAgendamientoWeb_imgBtnAgendar"
-    MEDICINA_GENERAL = "//span[contains(text(), 'MEDICINA GENERAL')]"
-    MEDICINA_FAMILIAR = "//span[contains(text(), 'MEDICINA FAMILIAR')]"
     
     if not USUARIO or not CONTRASENA:
         raise ValueError("Faltan variables de entorno USUARIO o CONTRASENA")
@@ -75,42 +81,57 @@ try:
     time.sleep(5)
      
     while True:
-        esperar_elemento_by_XPATH(MEDICINA_GENERAL)
-        click_element_by_XPATH(MEDICINA_GENERAL, False)
-        time.sleep(3)
+        fecha_hora_actual = datetime.now().strftime("%H:%M:%S")
+        if 'MEDICINA GENERAL' in SERVICIO_MEDICO:
+            # Click en Medicina General
+            xpath_medicina_general_link = build_xpath_servicio_medico_link(MEDICINA_GENERAL)
+            esperar_elemento_by_XPATH(xpath_medicina_general_link)
+            click_element_by_XPATH(xpath_medicina_general_link, False)
+            time.sleep(3)
         
-        seleccionar_cita_medica_medicina_general_link = "ctl00_ContentPlaceHolderPrincipalAgendamientoWeb_WucAgendaCita_RadLstMotivos_ctrl1_LnkBtnMotivo"
-        esperar_elemento(seleccionar_cita_medica_medicina_general_link)
-        click_element_by_ID(seleccionar_cita_medica_medicina_general_link, True)
-        
-        if verificar_disponibilidad(MENSAJE_NO_DISPONIBILIDAD) > 0:
-            fecha_hora_actual = datetime.now().strftime("%H:%M:%S")
-            print(f"{fecha_hora_actual}: NO hay disponibilidad en el subcentro adscrito para Medicina General")
-            cancel_button = driver.find_element(By.CLASS_NAME, "cancel")
-            cancel_button.click()
-
-            esperar_elemento_by_XPATH(MEDICINA_FAMILIAR)
-            click_element_by_XPATH(MEDICINA_FAMILIAR, False)
-            time.sleep(3)            
+            # Click en "Seleccionar" de Citas Médicas de Medicina General
+            xpath_seleccionar_cita_medica_link = build_xpath_seleccionar_motivo_link(MOTIVO_CITA_MEDICA)
+            esperar_elemento_by_XPATH(xpath_seleccionar_cita_medica_link)
+            click_element_by_XPATH(xpath_seleccionar_cita_medica_link, True)
             
-            cita_medica_medicina_familiar = "ctl00_ContentPlaceHolderPrincipalAgendamientoWeb_WucAgendaCita_RadLstMotivos_ctrl0_LnkBtnMotivo"
-            esperar_elemento(cita_medica_medicina_familiar)
-            click_element_by_ID(cita_medica_medicina_familiar, True)
-        
+            # Verificar disponibilidad de cita medica
             if verificar_disponibilidad(MENSAJE_NO_DISPONIBILIDAD) > 0:
+                # No hay disponibilidad
+                print(f"{fecha_hora_actual}: NO hay disponibilidad en el subcentro adscrito para Medicina General")
+                cancel_button = driver.find_element(By.CLASS_NAME, "cancel")
+                cancel_button.click()
+            else:
+                # Si hay disponibilidad
+                print("SÍ hay disponibilidad en el subcentro adscrito para Medicina General")
+                winsound.PlaySound('fun_song.wav',winsound.SND_FILENAME)
+                print('Fin del programa')
+                break
+
+        if 'MEDICINA FAMILIAR' in SERVICIO_MEDICO:
+            # Click en Medicina Familiar
+            xpath_servicio_medico_link = build_xpath_servicio_medico_link(MEDICINA_FAMILIAR)
+            esperar_elemento_by_XPATH(xpath_servicio_medico_link)
+            click_element_by_XPATH(xpath_servicio_medico_link, False)
+            time.sleep(3)                    
+            
+            # Click en "Seleccionar" de Citas Médicas de Medicina Familiar
+            xpath_seleccionar_cita_medica_link = build_xpath_seleccionar_motivo_link(MOTIVO_CITA_MEDICA)
+            esperar_elemento_by_XPATH(xpath_seleccionar_cita_medica_link)
+            click_element_by_XPATH(xpath_seleccionar_cita_medica_link, True)            
+
+            # Verificar disponibilidad de cita medica
+            if verificar_disponibilidad(MENSAJE_NO_DISPONIBILIDAD) > 0:
+                # No hay disponibilidad
                 print(f"{fecha_hora_actual}: NO hay disponibilidad en el subcentro adscrito para Medicina Familiar")
                 cancel_button = driver.find_element(By.CLASS_NAME, "cancel")
                 cancel_button.click()     
             else:
+                # Si hay disponibilidad
                 print("SÍ hay disponibilidad en el subcentro adscrito para Medicina Familiar")
                 winsound.PlaySound('fun_song.wav',winsound.SND_FILENAME)
                 print('Fin del programa')
-                break
-        else:
-            print("SÍ hay disponibilidad en el subcentro adscrito para Medicina General")
-            winsound.PlaySound('fun_song.wav',winsound.SND_FILENAME)
-            print('Fin del programa')
-            break
+                break        
+        
         print(f"Esperando {INTERVALO_MINUTOS_CONSULTAR} minutos para volver a intentar...")
         time.sleep(INTERVALO_MINUTOS_CONSULTAR*60)
 except Exception as e:
