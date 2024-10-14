@@ -1,0 +1,121 @@
+[1mdiff --git a/citas_medicas_automation.py b/citas_medicas_automation.py[m
+[1mindex 4e896bd..80a994e 100644[m
+[1m--- a/citas_medicas_automation.py[m
+[1m+++ b/citas_medicas_automation.py[m
+[36m@@ -42,23 +42,29 @@[m [mdef click_element_by_XPATH(xpath, is_scroll_necesary) :[m
+         element.click()  [m
+     except Exception as e:[m
+         print(f"Error al hacer clic en el elemento con XPATH {xpath}: {str(e)}")[m
+[31m-    [m
+ [m
+ def verificar_disponibilidad(mensaje):[m
+     return len(driver.find_elements(By.XPATH, f"//p[text()='{mensaje}']")) > 0[m
+[32m+[m
+[32m+[m[32mdef build_xpath_seleccionar_motivo_link(motivo_cita_medica):[m
+[32m+[m[32m    return f"//fieldset[@id='FieldSet2']//div[contains(., '{motivo_cita_medica}')]//a[contains(text(), 'Seleccionar')]"[m
+[32m+[m
+[32m+[m[32mdef build_xpath_servicio_medico_link(servicio_medico):[m
+[32m+[m[32m    return f"//span[contains(text(), '{servicio_medico}')]"[m
+     [m
+ try:[m
+     load_dotenv()[m
+     USUARIO = os.getenv('USUARIO')[m
+     CONTRASENA = os.getenv('CONTRASENA')[m
+     NOMBRE_COMPLETO_PACIENTE = os.getenv('NOMBRE_COMPLETO_PACIENTE')[m
+[32m+[m[32m    SERVICIO_MEDICO = ["MEDICINA GENERAL", "MEDICINA FAMILIAR"][m
+[32m+[m[32m    MEDICINA_GENERAL = 'MEDICINA GENERAL'[m
+     MEDICINA_FAMILIAR = 'MEDICINA FAMILIAR'[m
+[32m+[m[32m    MOTIVO_CITA_MEDICA = "CITA MEDICA"[m
+     CITAS_MEDICAS_URL = 'https://www.citas.med.ec/'[m
+     MENSAJE_NO_DISPONIBILIDAD = "El establecimiento en el que se encuentra adscrito no tiene disponibilidad para el servicio seleccionado. Desea mostrar más establecimientos?"[m
+[31m-    INTERVALO_MINUTOS_CONSULTAR = 10[m
+[32m+[m[32m    INTERVALO_MINUTOS_CONSULTAR = 0.1[m
+     ICONO_AGENDAR_CITA = "ContentPlaceHolderPrincipalAgendamientoWeb_imgBtnAgendar"[m
+[31m-    MEDICINA_GENERAL = "//span[contains(text(), 'MEDICINA GENERAL')]"[m
+[31m-    MEDICINA_FAMILIAR = "//span[contains(text(), 'MEDICINA FAMILIAR')]"[m
+     [m
+     if not USUARIO or not CONTRASENA:[m
+         raise ValueError("Faltan variables de entorno USUARIO o CONTRASENA")[m
+[36m@@ -75,42 +81,57 @@[m [mtry:[m
+     time.sleep(5)[m
+      [m
+     while True:[m
+[31m-        esperar_elemento_by_XPATH(MEDICINA_GENERAL)[m
+[31m-        click_element_by_XPATH(MEDICINA_GENERAL, False)[m
+[31m-        time.sleep(3)[m
+[31m-        [m
+[31m-        seleccionar_cita_medica_medicina_general_link = "ctl00_ContentPlaceHolderPrincipalAgendamientoWeb_WucAgendaCita_RadLstMotivos_ctrl1_LnkBtnMotivo"[m
+[31m-        esperar_elemento(seleccionar_cita_medica_medicina_general_link)[m
+[31m-        click_element_by_ID(seleccionar_cita_medica_medicina_general_link, True)[m
+[32m+[m[32m        fecha_hora_actual = datetime.now().strftime("%H:%M:%S")[m
+[32m+[m[32m        if 'MEDICINA GENERAL' in SERVICIO_MEDICO:[m
+[32m+[m[32m            # Click en Medicina General[m
+[32m+[m[32m            xpath_medicina_general_link = build_xpath_servicio_medico_link(MEDICINA_GENERAL)[m
+[32m+[m[32m            esperar_elemento_by_XPATH(xpath_medicina_general_link)[m
+[32m+[m[32m            click_element_by_XPATH(xpath_medicina_general_link, False)[m
+[32m+[m[32m            time.sleep(3)[m
+         [m
+[31m-        if verificar_disponibilidad(MENSAJE_NO_DISPONIBILIDAD) > 0:[m
+[31m-            fecha_hora_actual = datetime.now().strftime("%H:%M:%S")[m
+[31m-            print(f"{fecha_hora_actual}: NO hay disponibilidad en el subcentro adscrito para Medicina General")[m
+[31m-            cancel_button = driver.find_element(By.CLASS_NAME, "cancel")[m
+[31m-            cancel_button.click()[m
+[32m+[m[32m            # Click en "Seleccionar" de Citas Médicas de Medicina General[m
+[32m+[m[32m            xpath_seleccionar_cita_medica_link = build_xpath_seleccionar_motivo_link(MOTIVO_CITA_MEDICA)[m
+[32m+[m[32m            esperar_elemento_by_XPATH(xpath_seleccionar_cita_medica_link)[m
+[32m+[m[32m            click_element_by_XPATH(xpath_seleccionar_cita_medica_link, True)[m
+[32m+[m[41m            [m
+[32m+[m[32m            # Verificar disponibilidad de cita medica[m
+[32m+[m[32m            if verificar_disponibilidad(MENSAJE_NO_DISPONIBILIDAD) > 0:[m
+[32m+[m[32m                # No hay disponibilidad[m
+[32m+[m[32m                print(f"{fecha_hora_actual}: NO hay disponibilidad en el subcentro adscrito para Medicina General")[m
+[32m+[m[32m                cancel_button = driver.find_element(By.CLASS_NAME, "cancel")[m
+[32m+[m[32m                cancel_button.click()[m
+[32m+[m[32m            else:[m
+[32m+[m[32m                # Si hay disponibilidad[m
+[32m+[m[32m                print("SÍ hay disponibilidad en el subcentro adscrito para Medicina General")[m
+[32m+[m[32m                winsound.PlaySound('fun_song.wav',winsound.SND_FILENAME)[m
+[32m+[m[32m                print('Fin del programa')[m
+[32m+[m[32m                break[m
+ [m
+[31m-            esperar_elemento_by_XPATH(MEDICINA_FAMILIAR)[m
+[31m-            click_element_by_XPATH(MEDICINA_FAMILIAR, False)[m
+[31m-            time.sleep(3)            [m
+[32m+[m[32m        if 'MEDICINA FAMILIAR' in SERVICIO_MEDICO:[m
+[32m+[m[32m            # Click en Medicina Familiar[m
+[32m+[m[32m            xpath_servicio_medico_link = build_xpath_servicio_medico_link(MEDICINA_FAMILIAR)[m
+[32m+[m[32m            esperar_elemento_by_XPATH(xpath_servicio_medico_link)[m
+[32m+[m[32m            click_element_by_XPATH(xpath_servicio_medico_link, False)[m
+[32m+[m[32m            time.sleep(3)[m[41m                    [m
+             [m
+[31m-            cita_medica_medicina_familiar = "ctl00_ContentPlaceHolderPrincipalAgendamientoWeb_WucAgendaCita_RadLstMotivos_ctrl0_LnkBtnMotivo"[m
+[31m-            esperar_elemento(cita_medica_medicina_familiar)[m
+[31m-            click_element_by_ID(cita_medica_medicina_familiar, True)[m
+[31m-        [m
+[32m+[m[32m            # Click en "Seleccionar" de Citas Médicas de Medicina Familiar[m
+[32m+[m[32m            xpath_seleccionar_cita_medica_link = build_xpath_seleccionar_motivo_link(MOTIVO_CITA_MEDICA)[m
+[32m+[m[32m            esperar_elemento_by_XPATH(xpath_seleccionar_cita_medica_link)[m
+[32m+[m[32m            click_element_by_XPATH(xpath_seleccionar_cita_medica_link, True)[m[41m            [m
+[32m+[m
+[32m+[m[32m            # Verificar disponibilidad de cita medica[m
+             if verificar_disponibilidad(MENSAJE_NO_DISPONIBILIDAD) > 0:[m
+[32m+[m[32m                # No hay disponibilidad[m
+                 print(f"{fecha_hora_actual}: NO hay disponibilidad en el subcentro adscrito para Medicina Familiar")[m
+                 cancel_button = driver.find_element(By.CLASS_NAME, "cancel")[m
+                 cancel_button.click()     [m
+             else:[m
+[32m+[m[32m                # Si hay disponibilidad[m
+                 print("SÍ hay disponibilidad en el subcentro adscrito para Medicina Familiar")[m
+                 winsound.PlaySound('fun_song.wav',winsound.SND_FILENAME)[m
+                 print('Fin del programa')[m
+[31m-                break[m
+[31m-        else:[m
+[31m-            print("SÍ hay disponibilidad en el subcentro adscrito para Medicina General")[m
+[31m-            winsound.PlaySound('fun_song.wav',winsound.SND_FILENAME)[m
+[31m-            print('Fin del programa')[m
+[31m-            break[m
+[32m+[m[32m                break[m[41m        [m
+[32m+[m[41m        [m
+         print(f"Esperando {INTERVALO_MINUTOS_CONSULTAR} minutos para volver a intentar...")[m
+         time.sleep(INTERVALO_MINUTOS_CONSULTAR*60)[m
+ except Exception as e:[m
